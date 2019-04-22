@@ -71,7 +71,10 @@ class App(models.Model):
 
 class Screenshot(models.Model):
     url = models.URLField()
-    app = models.ForeignKey('App')
+    app = models.ForeignKey('App', related_name='screenshots')
+
+    def __unicode__(self):
+        return self.url
 class AppUrl(models.Model):
     url = models.URLField()
     category = models.IntegerField()

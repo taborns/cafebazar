@@ -4,6 +4,8 @@ from rest_framework import routers, serializers, viewsets
 from cafe import models
 
 class AppSerializer(serializers.ModelSerializer):
+    screenshots = serializers.StringRelatedField(many=True)
+
     class Meta:
         model = models.App
         fields = '__all__'
