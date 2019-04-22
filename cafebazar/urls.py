@@ -23,4 +23,9 @@ urlpatterns = [
     url('^categories/$', cafe_views.ListCategories.as_view()),
     url('^subcategories/$', cafe_views.ListSubCategories.as_view()),
     url('^search/(?P<name>\w+)/$', cafe_views.SearchView.as_view()),
+    url('^subcategories/(?P<categoryID>\d+)/$', cafe_views.CategorySubCatView.as_view()),
+    url('^category/(?P<categoryID>\d+)/$', cafe_views.CategoryAppView.as_view()),
+    url('^subcategory/(?P<subCategoryID>\d+)/$', cafe_views.SubCategoryAppView.as_view()),
+    url('^app/(?P<appID>\d+)/$', cafe_views.AppView.as_view()),
+    
 ]

@@ -50,13 +50,13 @@ class Category(models.Model):
 class SubCategory(models.Model):
     name = models.CharField(max_length=100)
     id = models.IntegerField(primary_key=True)
-    category = models.ForeignKey('Category')
+    category = models.ForeignKey('Category', related_name='subcategories')
     url = models.URLField()
     
 
 class App(models.Model):
-    cateogry = models.ForeignKey('Category')
-    sub_category = models.ForeignKey('SubCategory')
+    cateogry = models.ForeignKey('Category', related_name='apps')
+    sub_category = models.ForeignKey('SubCategory', related_name='apps')
     name = models.CharField(max_length=200)
     installs = models.CharField(max_length=200, null=True, blank=True)
     price = models.CharField(max_length=200)
