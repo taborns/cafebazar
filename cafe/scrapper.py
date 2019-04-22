@@ -10,7 +10,7 @@ def scrap():
 
     soup = BeautifulSoup(html.text, 'lxml')
 
-    get list of app categories 
+    #get list of app categories 
     all_apps_ul = soup.find('ul')
     all_apps = all_apps_ul.find_all('a')
     app_categories = []
@@ -33,7 +33,7 @@ def scrap():
     sub_category_selector = ".msht-row-head .msht-row-title"
     sub_category_link_sel = ".msht-row-more a"
 
-    for each categories retrieve every sub categories 
+    #for each categories retrieve every sub categories 
     sub_categories = []
     for index, category in enumerate(categories):
         full_url =  "https://cafebazaar.ir" + category['url']
