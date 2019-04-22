@@ -54,18 +54,17 @@ class SubCategory(models.Model):
     url = models.URLField()
     
 
-
 class App(models.Model):
     cateogry = models.ForeignKey('Category')
     sub_category = models.ForeignKey('SubCategory')
     name = models.CharField(max_length=200)
-    installs = models.CharField(max_length=20, null=True, blank=True)
-    price = models.CharField(max_length=20)
+    installs = models.CharField(max_length=200, null=True, blank=True)
+    price = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
     developer = models.CharField(max_length=200)
     developer_url = models.URLField(max_length=200)
-    size = models.CharField(max_length=20, null=True, blank=True)
-    version = models.CharField(max_length=20, null=True, blank=True)
+    size = models.CharField(max_length=200, null=True, blank=True)
+    version = models.CharField(max_length=200, null=True, blank=True)
     url = models.URLField()
     icon = models.URLField()
 

@@ -28,7 +28,6 @@ def scrap():
         models.Category.objects.create(**{'id' : index+24,'category_type' : 2, 'name' : (game.get_text()).encode('utf-8').strip(), 'url' : (game.get('href')).strip() })
         
     categories = [ {'id' : category.id, 'text' : category.name, 'category_type' : category.category_type, 'url' : category.url } for category in  models.Category.objects.all()]
-    
     categories = app_categories + game_categories
     sub_category_selector = ".msht-row-head .msht-row-title"
     sub_category_link_sel = ".msht-row-more a"
@@ -55,7 +54,6 @@ def scrap():
         
     sub_categories = [{'id' : subcat.id, 'category__id' : subcat.category.id, 'name' : subcat.name, 'url' : subcat.url } for subcat in models.SubCategory.objects.all()]
     current_page = 0
-    
     #get apps in sub category 
     app_urls = set()
     for app_url in models.AppUrl.objects.all():
@@ -76,6 +74,8 @@ def scrap():
             sub_category_url = "https://cafebazaar.ir/" + sub_category['url'] + "?l=en&p=" + str(current_page) + "&partial=true"
             html = requests.get(sub_category_url)
             soup = BeautifulSoup(html.text, 'lxml')
+        
+        
         
         
 
