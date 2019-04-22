@@ -73,3 +73,7 @@ class App(models.Model):
 class Screenshot(models.Model):
     url = models.URLField()
     app = models.ForeignKey('App')
+class AppUrl(models.Model):
+    url = models.URLField()
+    category = models.IntegerField()
+    subcategory = models.IntegerField()
