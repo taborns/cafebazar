@@ -67,7 +67,9 @@ class App(models.Model):
     version = models.CharField(max_length=200, null=True, blank=True)
     url = models.URLField()
     icon = models.URLField()
-
+    rating_total = models.CharField(max_length=200)
+    rating_total_count = models.CharField(max_length=200)
+    package_name = models.CharField(max_length=200, primary_key=True)
 
 class Screenshot(models.Model):
     url = models.URLField()
