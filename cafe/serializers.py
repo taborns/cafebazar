@@ -43,6 +43,6 @@ class HomeCollectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.HomeCollection
-        exclude = ('subcollections',)
+        fields = '__all__'
 
 
