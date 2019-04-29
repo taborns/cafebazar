@@ -11,10 +11,21 @@ from rest_framework.pagination import LimitOffsetPagination
 
 # Create your views here.
 
-def scrapView(request):
-    appDetails = scrap()
+def scrapView(request, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True ):
+    appDetails = scrap(appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True)
     return HttpResponse(appDetails)
 
+def scrapAppsView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False ):
+    appDetails = scrap(appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False)
+    return HttpResponse(appDetails)
+
+def scrapAppDetailView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=False, homeStuff=False, appDetail=True ):
+    appDetails = scrap( appcategories=False, gamecategories=False, subcategories=False, appUrls=False, homeStuff=False, appDetail=True )
+    return HttpResponse(appDetails)
+
+def scrapSubCatView(request, appcategories=False, gamecategories=False, subcategories=True, appUrls=False, homeStuff=False, appDetail=False ):
+    appDetails = scrap( appcategories=False, gamecategories=False, subcategories=True, appUrls=False, homeStuff=False, appDetail=False )
+    return HttpResponse(appDetails)
 
 
 class ListApps(generics.ListAPIView):

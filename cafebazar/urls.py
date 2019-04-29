@@ -19,6 +19,10 @@ from cafe import views as cafe_views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^scrap/$', cafe_views.scrapView),
+    url(r'^scrap/appurl/$', cafe_views.scrapAppsView),
+    url(r'^scrap/appdetail/$', cafe_views.scrapAppDetailView),
+    url(r'^scrap/subcat/$', cafe_views.scrapSubCatView),
+
     url('^apps/$', cafe_views.ListApps.as_view()),
     url('^categories/$', cafe_views.ListCategories.as_view()),
     url('^subcategories/$', cafe_views.ListSubCategories.as_view()),
