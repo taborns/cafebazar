@@ -48,7 +48,7 @@ class Category(models.Model):
         return self.name
 
 class SubCategory(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
     id = models.IntegerField(primary_key=True)
     category = models.ForeignKey('Category', related_name='subcategories')
     url = models.URLField()
@@ -81,3 +81,36 @@ class AppUrl(models.Model):
     url = models.URLField()
     category = models.IntegerField()
     subcategory = models.IntegerField()
+
+class HomeSubCat(models.Model):
+    name = models.CharField(max_length=200)
+    url = models.URLField()
+    apps = models.ManyToManyField('HomeApp')
+
+    def __unicode__(self):
+        return self.name
+
+class HomeCollection(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return self.name
+
+class HomeSubCollection(models.Model):
+    name = models.CharField(max_length=200)
+    collection = models.ForeignKey('HomeCollection', related_name='subcollections')
+    apps = models.ManyToManyField('HomeApp')
+    url = models.URLField()
+    img = models.URLField()
+
+    def __unicode__(self):
+        return self.name
+
+class HomeApp(models.Model):
+    name = models.CharField(max_length=200)
+    price = models.CharField(max_length=200)
+    url = models.URLField()
+    icon = models.URLField()
+    rating_total = models.CharField(max_length=200)
+    rating_total_count = models.CharField(max_length=200)
+    package_name = models.CharField(max_length=200)

@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'cafe'
+    'cafe',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'cafebazar.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'cafebazar',
+        'NAME': 'cafebazartest',
         'USER': 'root',
         'PASSWORD': 'strongpass',
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on

@@ -25,8 +25,8 @@ class ListApps(generics.ListAPIView):
 class AppView(generics.RetrieveAPIView):
     queryset = models.App.objects.all()
     serializer_class = serializers.AppSerializer
-    lookup_field = 'id'
-    lookup_url_kwarg = 'appID'
+    lookup_field = 'package_name'
+    lookup_url_kwarg = 'packagename'
 
 class ListCategories(generics.ListAPIView):
     queryset = models.Category.objects.all()
@@ -98,3 +98,56 @@ class CategorySubCatView(generics.ListAPIView):
         subcategories = category.subcategories.all()
         serializer = serializers.SubCategorySerializer(subcategories, many=True)
         return Response(serializer.data)
+
+class HomeSubCatView(generics.ListAPIView):
+    queryset = models.HomeSubCat.objects.all()
+    serializer_class = serializers.HomeSubCatSerializer
+    pagination_class = LimitOffsetPagination
+
+class HomeCollectionView(generics.ListAPIView):
+    queryset = models.HomeCollection.objects.all()
+    serializer_class = serializers.HomeCollectionSerializer
+    pagination_class = LimitOffsetPagination
+
+class HomeCollSubColl(generics.ListAPIView):
+    queryset = models.HomeSubCollection.objects.all()
+    serializer_class = serializers.HomeSubCollectionSerializer
+    pagination_class = LimitOffsetPagination
+    
+    def list(self, request, collectionID):
+        queryset = self.get_queryset()
+        collection= get_object_or_404(models.HomeCollection, pk=collectionID)
+        subcollections = collection.subcollections.all()
+        serializer = serializers.HomeSubCollectionSerializer(subcollections, many=True)
+        return Response(serializer.data)
+
+class HomeSubCatApps(generics.ListAPIView):
+    queryset = models.HomeSubCat.objects.all()
+    serializer_class = serializers.HomeSubCatSerializer
+    pagination_class = LimitOffsetPagination
+    
+    def list(self, request,categoryID ):
+        queryset = self.get_queryset()
+        subcat= get_object_or_404(models.HomeSubCat, pk=categoryID)
+        apps = subcat.apps.all()
+        serializer = serializers.HomeAppSerializer(apps, many=True)
+        return Response(serializer.data)
+
+class HomeSubCollApps(generics.ListAPIView):
+    queryset = models.HomeSubCollection.objects.all()
+    serializer_class = serializers.HomeAppSerializer
+    pagination_class = LimitOffsetPagination
+    
+    def list(self, request,subCollectionID ):
+        queryset = self.get_queryset()
+        subcollection= get_object_or_404(models.HomeSubCollection, pk=subCollectionID)
+        apps = subcollection.apps.all()
+        serializer = serializers.HomeAppSerializer(apps, many=True)
+        return Response(serializer.data)
+
+
+class HomeSubCollectionView(generics.ListAPIView):
+    queryset = models.HomeSubCollection.objects.all()
+    serializer_class = serializers.HomeSubCollectionSerializer
+    pagination_class = LimitOffsetPagination
+

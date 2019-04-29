@@ -26,6 +26,12 @@ urlpatterns = [
     url('^subcategories/(?P<categoryID>\d+)/$', cafe_views.CategorySubCatView.as_view()),
     url('^category/(?P<categoryID>\d+)/$', cafe_views.CategoryAppView.as_view()),
     url('^subcategory/(?P<subCategoryID>\d+)/$', cafe_views.SubCategoryAppView.as_view()),
-    url('^app/(?P<appID>\d+)/$', cafe_views.AppView.as_view()),
+    url('^app/(?P<packagename>[\w\.]+)/$', cafe_views.AppView.as_view()),
+    url('^home/subcollections/$', cafe_views.HomeSubCollectionView.as_view()),
+    url('^home/collections/$', cafe_views.HomeCollectionView.as_view()),
+    url('^home/subcollections/(?P<collectionID>\d+)/$', cafe_views.HomeCollSubColl.as_view()),
+    url('^home/subcollection/(?P<subCollectionID>\d+)/$', cafe_views.HomeSubCollApps.as_view()),
+    url('^home/categories/$', cafe_views.HomeSubCatView.as_view()),
+    url('^home/category/(?P<categoryID>\d+)/$', cafe_views.HomeSubCatApps.as_view()),
     
 ]

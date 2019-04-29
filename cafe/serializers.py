@@ -21,3 +21,28 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = models.SubCategory
         fields = '__all__'
 
+class HomeAppSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.HomeApp
+        fields = '__all__'
+
+class HomeSubCatSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.HomeSubCat
+        exclude = ('apps',)
+
+    
+class HomeSubCollectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.HomeSubCollection
+        exclude = ('apps',)
+
+class HomeCollectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.HomeCollection
+        exclude = ('subcollections',)
+
+
