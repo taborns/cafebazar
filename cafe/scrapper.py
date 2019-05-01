@@ -181,7 +181,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             print len(app_urls)
 
    
-
+    
     #retrieve app detail 
     if appDetail:
         app_details = []
@@ -210,7 +210,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             dev_sel = ".dev a"
             price_sel = ".price a"
             screen_shots = ".screenshot-holder .screenshot-wrp a"
-            description_sel = ".ltr p" #6th element 
+            description_sel = ".container .row.margin-top-sm" #6th element 
             app_attributes = ".col-sm-4 div span"
             rating_total = ".rating-total"
             rating_total_count = ".rating-total-count"
@@ -218,7 +218,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             installsID = 9
             sizeID = 11
             versionID = 13
-            print app_url
             app_detail = {}
             try:
                 app_detail['icon'] = "https:" + soup.select(icon_sel)[0].get('src')
@@ -238,7 +237,8 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
                 continue
 
             try:
-                app_detail['description'] = (soup.select(description_sel)[6].get_text()).encode('utf-8').strip()
+                app_description = (soup.select(description_sel)[0].findNext('div').find('.col-sm-8').get_text()).encode('utf-8').strip()
+                print app_description;
             except:
                 pass
 
@@ -255,8 +255,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             except:
                 pass
             
-
-
             app = models.App(**app_detail)
             app.save()
             

@@ -45,4 +45,22 @@ class HomeCollectionSerializer(serializers.ModelSerializer):
         model = models.HomeCollection
         fields = '__all__'
 
+class RankCatSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.RankCat
+        fields = '__all__'
+
+class RankAppSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.RankApp
+        fields = '__all__'
+
+class RankFilterSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.RankFilter
+        fields = '__all__'
+
 

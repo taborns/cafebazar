@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render, get_object_or_404
 from cafe.scrapper import scrap
+from cafe.ranks import rankScrap, saveCats, saveAppFilters
 from django.http import HttpResponse
 from rest_framework import mixins, generics
 from rest_framework.response import Response
@@ -27,6 +28,19 @@ def scrapSubCatView(request, appcategories=False, gamecategories=False, subcateg
     appDetails = scrap( appcategories=False, gamecategories=False, subcategories=True, appUrls=False, homeStuff=False, appDetail=False )
     return HttpResponse(appDetails)
 
+def saveCatView(request):
+    saveCats()
+    return HttpResponse('Done saving categories')
+
+def saveAppFilterView(request):
+    saveAppFilters()
+    return HttpResponse('Done saving filters')
+
+def rankScrapView(request):
+    rankScrap()
+    return HttpResponse('Done')
+
+    
 
 class ListApps(generics.ListAPIView):
     
@@ -161,4 +175,38 @@ class HomeSubCollectionView(generics.ListAPIView):
     queryset = models.HomeSubCollection.objects.all()
     serializer_class = serializers.HomeSubCollectionSerializer
     pagination_class = LimitOffsetPagination
+
+
+class RankCatView(generics.ListAPIView):
+    queryset = models.RankCat.objects.all()
+    serializer_class = serializers.RankCatSerializer
+    pagination_class = LimitOffsetPagination
+
+
+
+
+class RankFilterView(generics.ListAPIView):
+    queryset = models.RankFilter.objects.all()
+    serializer_class = serializers.RankFilterSerializer
+    pagination_class = LimitOffsetPagination
+    def list(self, request ):
+        queryset = self.get_queryset()
+        filters = models.RankFilter.objects.all()
+        serializer = serializers.RankFilterSerializer(filters, many=True)
+        return Response(serializer.data)
+
+
+
+class RankAppView(generics.ListAPIView):
+    queryset = models.RankApp.objects.all()
+    serializer_class = serializers.RankAppSerializer
+    pagination_class = LimitOffsetPagination
+
+    def list(self, request, filterID, categoryID ):
+        queryset = self.get_queryset()
+        rankFilter = get_object_or_404(models.RankFilter, pk=filterID)
+        rankCat = get_object_or_404(models.RankCat, pk=categoryID)
+        apps = models.RankApp.objects.filter(rankfilter=rankFilter, rankcat=rankCat)
+        serializer = serializers.RankAppSerializer(apps, many=True)
+        return Response(serializer.data)
 

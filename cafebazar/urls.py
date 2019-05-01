@@ -37,5 +37,13 @@ urlpatterns = [
     url('^home/subcollection/(?P<subCollectionID>\d+)/$', cafe_views.HomeSubCollApps.as_view()),
     url('^home/categories/$', cafe_views.HomeSubCatView.as_view()),
     url('^home/category/(?P<categoryID>\d+)/$', cafe_views.HomeSubCatApps.as_view()),
+
+    url('^rank/scrap/$', cafe_views.rankScrapView),
+    url('^rank/savecat/$', cafe_views.saveCatView),
+    url('^rank/savefilter/$', cafe_views.saveAppFilterView),
+
+    url('^rank/categories/$', cafe_views.RankCatView.as_view()),
+    url('^rank/filters/$', cafe_views.RankFilterView.as_view()),
+    url('^rank/apps/(?P<filterID>\d+)/(?P<categoryID>\d+)/$', cafe_views.RankAppView.as_view()),
     
 ]

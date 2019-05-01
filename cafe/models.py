@@ -114,3 +114,28 @@ class HomeApp(models.Model):
     rating_total = models.CharField(max_length=200)
     rating_total_count = models.CharField(max_length=200)
     package_name = models.CharField(max_length=200)
+
+
+class RankCat(models.Model):
+    catcode = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+
+class RankFilter(models.Model):
+    name = models.CharField(max_length=200)
+    filtercode = models.CharField(max_length=200)
+   
+
+
+class RankApp(models.Model):
+    rankfilter = models.ForeignKey('RankFilter', related_name='apps')
+    rankcat = models.ForeignKey('RankCat', related_name='apps')
+    rank = models.IntegerField()
+    name = models.CharField(max_length=200)
+    packagename = models.CharField(max_length=200)
+    icon = models.URLField()
+    developer = models.CharField(max_length=200)
+    rating = models.CharField(max_length=100)
+    category = models.CharField(max_length=200)
+    installs = models.CharField(max_length=200)
+
+
