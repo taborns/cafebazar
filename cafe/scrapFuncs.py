@@ -3,9 +3,14 @@ from bs4 import BeautifulSoup
 import base64
 import urlparse
 from urllib import urlencode
+from PIL import Image
+from django.conf import settings
+
 
 PAGE_INC = 24
 HOME_CAT_ID = -10
+IMAGE_PATH = settings.MEDIA_ROOT
+
 def convertWebp(url, size=(100,100), prefix='icon-'):
     import random
     randnum = random.randint(1000,10000)
@@ -92,6 +97,7 @@ def home_app_detail(app_url_):
         app_detail['url'] = app_url
         app_detail['package_name'] = app_url.split("/")[-2]
     except Exception as e :
+        print e
         return
 
     return app_detail

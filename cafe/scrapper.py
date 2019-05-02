@@ -5,11 +5,9 @@ import base64
 import urlparse
 from urllib import urlencode
 from scrapFuncs import *
-from PIL import Image
-from django.conf import settings
+
 HOME_CAT_ID = -10
 HOME_URL =  "https://cafebazaar.ir"
-IMAGE_PATH = settings.MEDIA_ROOT
 
 
 def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):

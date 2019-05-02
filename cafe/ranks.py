@@ -1,22 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 from cafe import models
+from scrapFuncs import *
+
 
 HOME_URL = 'https://www.appbrain.com'
 main_cats = {'top_new_free' : '/stats/google-play-rankings/top_new_free/all/ir', 'top_free' : '/stats/google-play-rankings/top_free/all/ir', 'top_grossing' : '/stats/google-play-rankings/top_grossing/all/ir'}
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3683.103 Safari/537.36'}
-
-def convertWebp(url, size=(100,100), prefix='icon-'):
-    import random
-    randnum = random.randint(1000,10000)
-
-    image_name = url.split('/')[-1].rsplit('.', 1)[0]
-    image_name = prefix + image_name + str(randnum) + '.webp'
-    image = Image.open(requests.get(url, stream=True).raw)
-    image.thumbnail(size, Image.ANTIALIAS)
-    image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
-
-    return image_name
 
 
 def saveCats():
