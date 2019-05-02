@@ -6,6 +6,19 @@ from urllib import urlencode
 
 PAGE_INC = 24
 HOME_CAT_ID = -10
+def convertWebp(url, size=(100,100), prefix='icon-'):
+    import random
+    randnum = random.randint(1000,10000)
+
+    image_name = url.split('/')[-1].rsplit('.', 1)[0]
+    image_name = prefix + image_name + str(randnum) + '.webp'
+    image = Image.open(requests.get(url, stream=True).raw)
+    image.thumbnail(size, Image.ANTIALIAS)
+    image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
+
+    return image_name
+
+
 
 def buildUrl(url, current_page=0, lan='en'):
     app_url = url + "?&p=" + str(current_page) + "&partial=true"
@@ -71,7 +84,7 @@ def home_app_detail(app_url_):
     versionID = 13
     app_detail = {}
     try:
-        app_detail['icon'] = "https:" + soup.select(icon_sel)[0].get('src')
+        app_detail['icon'] = convertWebp("https:" + soup.select(icon_sel)[0].get('src'))
         app_detail['name'] = (soup.select(title_sel)[0].get_text()).encode('utf-8').strip()
         app_detail['price'] =(soup.select(price_sel)[0].get_text()).encode('utf-8').strip()
         app_detail['rating_total'] = soup_en.select(rating_total)[0].get_text().encode('utf-8').strip()

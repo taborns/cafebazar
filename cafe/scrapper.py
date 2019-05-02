@@ -11,18 +11,6 @@ HOME_CAT_ID = -10
 HOME_URL =  "https://cafebazaar.ir"
 IMAGE_PATH = settings.MEDIA_ROOT
 
-def convertWebp(url, size=(100,100), prefix='icon-'):
-    import random
-    randnum = random.randint(1000,10000)
-
-    image_name = url.split('/')[-1].rsplit('.', 1)[0]
-    image_name = prefix + image_name + str(randnum) + '.webp'
-    image = Image.open(requests.get(url, stream=True).raw)
-    image.thumbnail(size, Image.ANTIALIAS)
-    image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
-
-    return image_name
-
 
 def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):
     PAGE_INC = 24
