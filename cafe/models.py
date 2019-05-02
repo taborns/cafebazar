@@ -61,8 +61,7 @@ class App(models.Model):
     installs = models.CharField(max_length=200, null=True, blank=True)
     price = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
-    developer = models.CharField(max_length=200)
-    developer_url = models.URLField(max_length=200)
+    developer = models.ForeignKey('Developer', related_name='apps')
     size = models.CharField(max_length=200, null=True, blank=True)
     version = models.CharField(max_length=200, null=True, blank=True)
     url = models.URLField()
@@ -77,6 +76,11 @@ class Screenshot(models.Model):
 
     def __unicode__(self):
         return self.url
+
+class Developer(models.Model):
+    name = models.CharField(max_length=200)
+    developerID = models.CharField(max_length=200)
+
 class AppUrl(models.Model):
     url = models.URLField()
     category = models.IntegerField()

@@ -64,3 +64,8 @@ class RankFilterSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DeveloperSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Developer
+        fields = '__all__'

@@ -5,9 +5,25 @@ import base64
 import urlparse
 from urllib import urlencode
 from scrapFuncs import *
-
+from PIL import Image
+from django.conf import settings
 HOME_CAT_ID = -10
 HOME_URL =  "https://cafebazaar.ir"
+IMAGE_PATH = settings.MEDIA_ROOT
+
+def convertWebp(url, size=(100,100), prefix='icon-'):
+    import random
+    randnum = random.randint(1000,10000)
+
+    image_name = url.split('/')[-1].rsplit('.', 1)[0]
+    image_name = prefix + image_name + str(randnum) + '.webp'
+    image = Image.open(requests.get(url, stream=True).raw)
+    image.thumbnail(size, Image.ANTIALIAS)
+    image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
+
+    return image_name
+
+
 def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):
     PAGE_INC = 24
     categories_url = "https://cafebazaar.ir/cat/?partial=true"
@@ -210,7 +226,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             dev_sel = ".dev a"
             price_sel = ".price a"
             screen_shots = ".screenshot-holder .screenshot-wrp a"
-            description_sel = ".container .row.margin-top-sm" #6th element 
+            description_sel = ".app-container .row .col-sm-8 .rtl" #0th element 
             app_attributes = ".col-sm-4 div span"
             rating_total = ".rating-total"
             rating_total_count = ".rating-total-count"
@@ -220,12 +236,17 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             versionID = 13
             app_detail = {}
             try:
-                app_detail['icon'] = "https:" + soup.select(icon_sel)[0].get('src')
+                app_detail['icon'] = convertWebp("https:" + soup.select(icon_sel)[0].get('src'))
                 app_detail['name'] = (soup.select(title_sel)[0].get_text()).encode('utf-8').strip()
-                app_detail['developer'] = (soup.select(dev_sel)[0].get_text()).encode('utf-8').strip()
-                app_detail['developer_url'] = soup.select(dev_sel)[0].get('href')
+                developer = {}
+                developer['name'] = (soup.select(dev_sel)[0].get_text()).encode('utf-8').strip()
+                developerURL  = soup.select(dev_sel)[0].get('href')
+                developer['developerID'] = developerURL.split('/')[-2]
+
+                developer, created = models.Developer.objects.get_or_create(**developer)
+                app_detail['developer'] = developer
                 app_detail['price'] =(soup.select(price_sel)[0].get_text()).encode('utf-8').strip()
-                screenshots = ["https:" + screenshot.get('href') for screenshot in soup.select(screen_shots)]
+                screenshots = [convertWebp("https:" + screenshot.get('href'), (500,400), 'screenshot-') for screenshot in soup.select(screen_shots)]
                 app_detail['cateogry'] = models.Category.objects.get(id=app_url_[0])
                 app_detail['sub_category'] = models.SubCategory.objects.get(id=app_url_[2])
                 app_detail['rating_total'] = soup_en.select(rating_total)[0].get_text().encode('utf-8').strip()
@@ -237,9 +258,9 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
                 continue
 
             try:
-                app_description = (soup.select(description_sel)[0].findNext('div').find('.col-sm-8').get_text()).encode('utf-8').strip()
-                print app_description;
-            except:
+                app_detail['description'] = (soup.select(description_sel)[0].get_text()).encode('utf-8').strip()
+            except Exception as e:
+                print "DESC ERROR", e
                 pass
 
             try:
@@ -260,6 +281,8 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             
             for screenshoturl in screenshots:
                 models.Screenshot(app = app, url=screenshoturl).save()
+
+
             app_details.append(app_detail)
     
     return 'Done'

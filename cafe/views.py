@@ -210,3 +210,26 @@ class RankAppView(generics.ListAPIView):
         serializer = serializers.RankAppSerializer(apps, many=True)
         return Response(serializer.data)
 
+
+class ListDeveloperView(generics.ListAPIView):
+    queryset = models.Developer.objects.all()
+    serializer_class = serializers.DeveloperSerializer
+    pagination_class = LimitOffsetPagination
+
+class DetailDeveloperView(generics.RetrieveAPIView):
+    queryset = models.Developer.objects.all()
+    serializer_class = serializers.DeveloperSerializer
+    pagination_class = LimitOffsetPagination
+
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'developerID'
+
+class DeveloperAppsView(generics.ListAPIView):
+    queryset = models.App.objects.all()
+    serializer_class = serializers.AppSerializer
+    pagination_class = LimitOffsetPagination
+    def list(self, request, developerID ):
+        developer =  get_object_or_404(models.Developer, pk=developerID)
+        serializer = serializers.AppSerializer(developer.apps.all(), many=True)
+        return Response(serializer.data)
+

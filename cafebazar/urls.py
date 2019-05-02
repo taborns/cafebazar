@@ -13,9 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, static
 from django.contrib import admin
 from cafe import views as cafe_views
+from django.conf import settings
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^scrap/$', cafe_views.scrapView),
@@ -25,6 +27,10 @@ urlpatterns = [
 
     url('^apps/$', cafe_views.ListApps.as_view()),
     url('^categories/$', cafe_views.ListCategories.as_view()),
+    url('^developers/$', cafe_views.ListDeveloperView.as_view()),
+    url('^developer/(?P<developerID>\d+)/$', cafe_views.DetailDeveloperView.as_view()),
+    url('^developer/(?P<developerID>\d+)/apps/$', cafe_views.DeveloperAppsView.as_view()),
+
     url('^subcategories/$', cafe_views.ListSubCategories.as_view()),
     url('^search/(?P<name>\w+)/$', cafe_views.SearchView.as_view()),
     url('^subcategories/(?P<categoryID>\d+)/$', cafe_views.CategorySubCatView.as_view()),
@@ -46,4 +52,4 @@ urlpatterns = [
     url('^rank/filters/$', cafe_views.RankFilterView.as_view()),
     url('^rank/apps/(?P<filterID>\d+)/(?P<categoryID>\d+)/$', cafe_views.RankAppView.as_view()),
     
-]
+] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
