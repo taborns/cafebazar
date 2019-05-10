@@ -2,7 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from cafe import models
 from scrapFuncs import *
-
+# Importing all needed modules
+from multiprocessing.pool import ThreadPool
 
 HOME_URL = 'https://www.appbrain.com'
 main_cats = {'top_new_free' : '/stats/google-play-rankings/top_new_free/all/ir', 'top_free' : '/stats/google-play-rankings/top_free/all/ir', 'top_grossing' : '/stats/google-play-rankings/top_grossing/all/ir'}
@@ -73,20 +74,36 @@ def saveApp(filterData, catData):
 
         
 
-def rankScrap():
-    app_filters = models.RankFilter.objects.all()
-    main_cats = models.RankCat.objects.all()
-    all_list = {}
+# Define a function for the thread
+def theScrapper( main_cat, app_filter):
+        all_apps = saveApp(app_filter, main_cat)
+        app_filter.apps.filter(rankcat=main_cat).delete()
+        for app in all_apps:
+                app.save()
+        print "DONE", app_filter.pk, main_cat.pk, app_filter.apps.filter(rankcat=main_cat).count();
 
-    for main_cat in main_cats:
-        for app_filter in app_filters:
-                all_apps = saveApp(app_filter, main_cat)
-                app_filter.apps.filter(rankcat=main_cat).delete()
-                for app in all_apps:
-                        app.save()
-                print "DONE", app_filter.apps.filter(rankcat=main_cat).count();
-        
-            
+
+def rankScrap():
+        app_filters = models.RankFilter.objects.all()
+        main_cats = models.RankCat.objects.all()
+        thread_count = 10 
+        thread_pool = ThreadPool(processes=thread_count) 
+        known_threads = {}
+
+        for main_cat in main_cats:
+                for app_filter in app_filters:
+                        thread_pool.apply_async(theScrapper, args=(main_cat,app_filter))
+
+        thread_pool.close() # After all threads started we close the pool
+        thread_pool.join() # And wait until all threads are done
+
+
+        return "DONE"
+
+
+
+
+
 
 
 
