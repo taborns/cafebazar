@@ -18,7 +18,6 @@ def saveAppFilters():
 
     main_cat = models.RankCat.objects.first()
     app_list_url = HOME_URL + '/stats/google-play-rankings/' + main_cat.catcode + '/all/ir'
-    print app_list_url
     html = requests.get(app_list_url, headers=headers)
     soup = BeautifulSoup(html.text, 'lxml')
 
@@ -34,32 +33,45 @@ def saveAppFilters():
 
 def saveApp(filterData, catData):
     
-    app_list_url = HOME_URL + '/stats/google-play-rankings/' + catData.catcode + '/' + filterData.filtercode+ '/ir'
-    html = requests.get(app_list_url, headers=headers)
-    soup = BeautifulSoup(html.text, 'lxml')
-    
-    rankRows = soup.select('#rankings-table tbody tr')
+        app_list_url = HOME_URL + '/stats/google-play-rankings/' + catData.catcode + '/' + filterData.filtercode+ '/ir'
+        html = requests.get(app_list_url, headers=headers)
+        soup = BeautifulSoup(html.text, 'lxml')
 
-    top_apps = []
-    for rankRow in rankRows:
-        app = {}
-        if not rankRow.select('td.ranking-rank'):
-            continue
+        rankRows = soup.select('#rankings-table tbody tr')
 
-        app['rank'] = int(rankRow.select('td.ranking-rank')[0].get_text().strip())
-        app['name'] = rankRow.select('td.ranking-app-cell a')[0].get_text()
-        url = rankRow.select('td.ranking-app-cell a')[0].get('href')
-        package_name = url.split('/')[-1]
-        app['packagename'] = package_name
+        top_apps = []
+        all_apps = []
+
+        for rankRow in rankRows:
+                app = {}
+                if not rankRow.select('td.ranking-rank'):
+                        continue
+
+                app['rank'] = int(rankRow.select('td.ranking-rank')[0].get_text().strip())
+                app['name'] = rankRow.select('td.ranking-app-cell a')[0].get_text()
+                url = rankRow.select('td.ranking-app-cell a')[0].get('href')
+                package_name = url.split('/')[-1]
+                app['packagename'] = package_name
+
+                app['developer'] = rankRow.select('.ranking-app-cell-creator a')[0].get_text()
+                app['rating'] = rankRow.select('td.ranking-rating-cell span')[0].get_text().strip()
+                app['category'] = rankRow.select('td.ranking-app-cell')[0].findNext('td').get_text().strip()
+                app['installs'] = rankRow.select('td.ranking-rating-cell')[0].findNext('td').get_text().strip()
+                app['rankfilter'] = filterData
+                app['rankcat'] = catData
+                rankApp = models.RankApp.objects.filter(packagename=app['packagename'], rankfilter=app['rankfilter'], rankcat=app['rankcat']).first()
+                if rankApp:
+                        app['icon'] = rankApp.icon
+                else:
+                        print "No app found", app['rankfilter'].pk, app['rankcat'].pk, app['packagename']
+                        app['icon'] =  convertWebp(rankRow.select('td.ranking-icon-cell img')[0].get('data-src'))
+                
+                rankApp = models.RankApp(**app)
+                all_apps.append(rankApp)
+
+        return all_apps
+
         
-        app['icon'] =  convertWebp(rankRow.select('td.ranking-icon-cell img')[0].get('data-src'))
-        app['developer'] = rankRow.select('.ranking-app-cell-creator a')[0].get_text()
-        app['rating'] = rankRow.select('td.ranking-rating-cell span')[0].get_text().strip()
-        app['category'] = rankRow.select('td.ranking-app-cell')[0].findNext('td').get_text().strip()
-        app['installs'] = rankRow.select('td.ranking-rating-cell')[0].findNext('td').get_text().strip()
-        app['rankfilter'] = filterData
-        app['rankcat'] = catData
-        models.RankApp.objects.create(**app)
 
 def rankScrap():
     app_filters = models.RankFilter.objects.all()
@@ -67,10 +79,14 @@ def rankScrap():
     all_list = {}
 
     for main_cat in main_cats:
-        print "Category", main_cat.name 
         for app_filter in app_filters:
-            print "Filter", app_filter.name
-            saveApp(app_filter, main_cat)
+                all_apps = saveApp(app_filter, main_cat)
+                app_filter.apps.filter(rankcat=main_cat).delete()
+                for app in all_apps:
+                        app.save()
+                print "DONE", app_filter.apps.filter(rankcat=main_cat).count();
+        
+            
 
 
 

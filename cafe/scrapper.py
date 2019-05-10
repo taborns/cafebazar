@@ -110,7 +110,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
                     homeSubCollectionObject.apps.add(homeApp)
 
     if subcategories:
-        print "DATA"
         #for each categories retrieve every sub categories 
         sub_categories = []
         sub_category_collections = {}
