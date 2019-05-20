@@ -143,3 +143,13 @@ class RankApp(models.Model):
     installs = models.CharField(max_length=200)
 
 
+class RecommendedApp(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+    size = models.CharField(max_length=200, null=True, blank=True)
+    version = models.CharField(max_length=200, null=True, blank=True)
+    url = models.URLField()
+    icon = models.URLField()
+    rating_total = models.CharField(max_length=200)
+    rating_total_count = models.CharField(max_length=200)
+    package_name = models.CharField(max_length=200, primary_key=True)

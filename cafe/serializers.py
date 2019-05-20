@@ -69,3 +69,9 @@ class DeveloperSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Developer
         fields = '__all__'
+
+class RecommendedAppSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.RecommendedApp
+        fields = '__all__'
+        
