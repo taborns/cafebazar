@@ -52,6 +52,7 @@ urlpatterns = [
     url('^rank/filters/$', cafe_views.RankFilterView.as_view()),
     url('^rank/apps/(?P<filterID>\d+)/(?P<categoryID>\d+)/$', cafe_views.RankAppView.as_view()),
 
-    url('^recommended/', cafe_views.RecommendedAppsView.as_view()),
+    url('^myapps/((?P<appType>(recom|ad))/)?$', cafe_views.RecommendedAppsView.as_view()),
     
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

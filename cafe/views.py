@@ -236,6 +236,16 @@ class DeveloperAppsView(generics.ListAPIView):
 
 class RecommendedAppsView(generics.ListAPIView):
     queryset = models.RecommendedApp.objects.all()
-    serializer_class = serializers.AppSerializer
+    serializer_class = serializers.RecommendedAppSerializer
     pagination_class = LimitOffsetPagination
+
+    def list(self, request, appType=None):
+        recomApps = self.get_queryset()
+        if appType:
+            recomApps = recomApps.filter(app_type=appType)
+            
+        serializer = self.get_serializer_class()(recomApps, many=True)
+
+        return Response( serializer.data)
+
 

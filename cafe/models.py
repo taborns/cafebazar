@@ -153,3 +153,4 @@ class RecommendedApp(models.Model):
     rating_total = models.CharField(max_length=200)
     rating_total_count = models.CharField(max_length=200)
     package_name = models.CharField(max_length=200, primary_key=True)
+    app_type = models.CharField(max_length=200, choices=(('recom', 'Recommended'), ('ad', 'Advertized')))
