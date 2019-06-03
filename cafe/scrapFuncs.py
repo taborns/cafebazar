@@ -11,19 +11,26 @@ PAGE_INC = 24
 HOME_CAT_ID = -10
 IMAGE_PATH = settings.MEDIA_ROOT
 
-def convertWebp(url, size=(100,100), prefix='icon-'):
+def convertWebp(url, image_name, size=(100,100)):
+    image_name =  doWebpConversion(url, image_name, size)
+    return image_name
+
+def generateRandomName(url, prefix='icon-'):
     import random
     randnum = random.randint(1000,10000)
 
     image_name = url.split('/')[-1].rsplit('.', 1)[0]
     image_name = prefix + image_name + str(randnum) + '.webp'
+
+    return image_name
+
+def doWebpConversion(url, image_name, size):
+    
     image = Image.open(requests.get(url, stream=True).raw)
     image.thumbnail(size, Image.ANTIALIAS)
     image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
 
     return image_name
-
-
 
 def buildUrl(url, current_page=0, lan='en'):
     app_url = url + "?&p=" + str(current_page) + "&partial=true"

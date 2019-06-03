@@ -37,7 +37,6 @@ class NameField(models.CharField):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    id = models.IntegerField(primary_key=True)
     url = models.URLField()
     category_type = models.IntegerField(choices=(
         (1, 'app'),
@@ -49,7 +48,6 @@ class Category(models.Model):
 
 class SubCategory(models.Model):
     name = models.CharField(max_length=200)
-    id = models.IntegerField(primary_key=True)
     category = models.ForeignKey('Category', related_name='subcategories')
     url = models.URLField()
     
@@ -70,10 +68,14 @@ class App(models.Model):
     rating_total_count = models.CharField(max_length=200)
     package_name = models.CharField(max_length=200, primary_key=True)
 
+    def addScreenshoot(self, screenshot_url):
+        self.screenshots.add( Screenshot(app=self, url=screenshot_url))
+
 class Screenshot(models.Model):
     url = models.URLField()
     app = models.ForeignKey('App', related_name='screenshots')
-
+    original_url = models.URLField()
+    
     def __unicode__(self):
         return self.url
 
@@ -89,7 +91,7 @@ class AppUrl(models.Model):
 class HomeSubCat(models.Model):
     name = models.CharField(max_length=200)
     url = models.URLField()
-    apps = models.ManyToManyField('HomeApp')
+    apps = models.ManyToManyField('App')
 
     def __unicode__(self):
         return self.name
@@ -103,7 +105,7 @@ class HomeCollection(models.Model):
 class HomeSubCollection(models.Model):
     name = models.CharField(max_length=200)
     collection = models.ForeignKey('HomeCollection', related_name='subcollections')
-    apps = models.ManyToManyField('HomeApp')
+    apps = models.ManyToManyField('App')
     url = models.URLField()
     img = models.URLField()
 

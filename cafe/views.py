@@ -155,7 +155,7 @@ class HomeSubCatApps(generics.ListAPIView):
         queryset = self.get_queryset()
         subcat= get_object_or_404(models.HomeSubCat, pk=categoryID)
         apps = subcat.apps.all()
-        serializer = serializers.HomeAppSerializer(apps, many=True)
+        serializer = serializers.AppSerializer(apps, many=True)
         return Response(serializer.data)
 
 class HomeSubCollApps(generics.ListAPIView):
