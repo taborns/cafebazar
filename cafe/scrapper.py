@@ -12,10 +12,9 @@ from multiprocessing.pool import ThreadPool
 HOME_CAT_ID = 0
 HOME_URL =  "https://cafebazaar.ir"
 
-thread_count = 30
+thread_count = 20
 thread_pool = ThreadPool(processes=thread_count) 
  
-image_thread_pool = ThreadPool(processes=20)
 
 class AppImageHandler:
     def __init__(self, app):
@@ -32,7 +31,7 @@ class AppImageHandler:
 
 
 def saveCategories(category_type=1):
-    categories_url = HOME_URL + "/cat/?partial=true&l=en"
+    categories_url = HOME_URL + "/cat/?partial=true"
     html = requests.get(categories_url)
 
     soup = BeautifulSoup(html.text, 'lxml')
@@ -46,7 +45,7 @@ def saveCategories(category_type=1):
         app_name = app.get_text().encode('utf-8').strip()
         app_url = (app.get('href')).strip()
         try:
-            category= models.Category.objects.get(name=app_name)
+            category= models.Category.objects.get(name=app_name, category_type=category_type)
             category.url = app_url
             category.save()
         except Exception as e:
@@ -101,20 +100,24 @@ def get_cafeBazarHomeCats():
     return home_sub_categories, home_collections
 
 def homeCatSave(home_sub_categories):
-    cat_names = []
-    def getAppDetailCat(homeSubCatAppUrlObj):
+    cat_pks = []
+    def getAppDetailCat(homeSubCatAppUrlObj, homeSubCatObject):
         homeApp = getAppDetail(homeSubCatAppUrlObj)
+        print "I am here ", homeSubCatObject.name, homeSubCatObject.pk, homeApp.package_name
         if homeApp:
             homeSubCatObject.apps.add(homeApp)
             
     for home_sub_category in home_sub_categories:
-        cat_names.append(home_sub_category.get('name'))
         try:
-            homeSubCatObject = models.HomeSubCat.objects.get(name = home_sub_category.get('name'))
+            homeSubCatObject = models.HomeSubCat.objects.filter(name = home_sub_category.get('name'))
             homeSubCatObject.update(**home_sub_category)
-        except:
+            homeSubCatObject = homeSubCatObject.first()
+        except Exception as e:
+            print "#### **** CAT SAVE ERR", e
             homeSubCatObject = models.HomeSubCat.objects.create(**home_sub_category)
         
+        cat_pks.append(homeSubCatObject.pk)
+
         homeSubCatObject.apps.clear()
 
         homeSubCatAppUrls = getAllApps( HOME_URL + home_sub_category['url'] )
@@ -123,55 +126,65 @@ def homeCatSave(home_sub_categories):
             homeSubCatAppUrlObjs.append(models.AppUrl(url= homeSubCatAppUrl, category=0, subcategory=0) )
         
         for homeSubCatAppUrlObj in homeSubCatAppUrlObjs:
-            thread_pool.apply_async(getAppDetailCat, args=(homeSubCatAppUrlObj, ))
+            thread_pool.apply_async(getAppDetailCat, args=(homeSubCatAppUrlObj, homeSubCatObject))
 
 
-    models.HomeSubCat.objects.filter(~Q(name__in=cat_names)).delete()
+    models.HomeSubCat.objects.filter(~Q(pk__in=cat_pks)).delete()
 
 def homeCollSave(home_collections):
-    home_collection_names = []
-    home_subcollection_names = []
+    home_collection_pks = []
     home_app_package_names = []
     
-    def getAppDetailColl(subcollection_app_url_obj):
+    def getAppDetailColl(subcollection_app_url_obj, homeSubCollectionObject):
         homeApp = getAppDetail(subcollection_app_url_obj)
+        print "Collection save", homeApp.name, homeApp.pk, homeSubCollectionObject.name, homeSubCollectionObject.pk
         if homeApp:
             homeSubCollectionObject.apps.add(homeApp)
             home_app_package_names.append(homeApp.package_name)
-       
+    
     for home_collection_name in home_collections:
         home_subcollections = home_collections[home_collection_name]
-        home_collection_names.append( home_collection_name)
 
         try:
-            home_collection_object = models.HomeCollection.objects.get(name = home_collection_name)
+            home_collection_object = models.HomeCollection.objects.filter(name = home_collection_name).first()
 
-        except:
+        except Exception as e:
+            print "#### ****  HOME COLLECTION ERR", e
             home_collection_object = models.HomeCollection.objects.create(name=home_collection_name)
+        
+        home_collection_pks.append( home_collection_object.pk )
 
-
+        home_subcollection_pks = []
         for home_subcollection in home_subcollections:
             home_subcollection['collection'] = home_collection_object
-            home_subcollection_names.append(home_subcollection.get('name'))
 
             try:
-                homeSubCollectionObject = models.HomeSubCollection.objects.get(home_subcollection.get('name'))
+                homeSubCollectionObject =home_collection_object.subcollections.filter(name=home_subcollection.get('name'))
                 homeSubCollectionObject.update( **home_subcollection)
-            except:
+                homeSubCollectionObject = homeSubCollectionObject.first()
+            except Exception as e:
+                print "#### ****  HOME SUB COLLECTION ERR", e
+
                 homeSubCollectionObject = models.HomeSubCollection.objects.create(**home_subcollection)
             homeSubCollectionObject.apps.clear()
 
+            home_subcollection_pks.append(homeSubCollectionObject.pk)
 
             subcollection_app_urls = getAllApps(HOME_URL + home_subcollection['url'])
             subcollection_app_url_objs = []
+
             for subcollection_app_url in subcollection_app_urls:
                 subcollection_app_url = HOME_URL+ subcollection_app_url
+
             for subcollection_app_url in subcollection_app_urls:
                 subcollection_app_url_objs.append(models.AppUrl(url= subcollection_app_url, category=0, subcategory=0) )
         
-        for subcollection_app_url_obj in subcollection_app_url_objs:
-            thread_pool.apply_async(getAppDetailColl, args=(subcollection_app_url_obj,))
-            
+            for subcollection_app_url_obj in subcollection_app_url_objs:
+                thread_pool.apply_async(getAppDetailColl, args=(subcollection_app_url_obj,  homeSubCollectionObject) )
+        
+        home_collection_object.subcollections.filter(~Q(pk__in=home_subcollection_pks)).delete()
+
+    models.HomeCollection.objects.filter( ~Q( pk__in=home_collection_pks)).delete()
 
 def addSubCategories(categories):
      #for each categories retrieve every sub categories 
@@ -212,7 +225,7 @@ def addSubCategories(categories):
             sub_categories.append( subcat )
             sub_category_pks.append(subcat.pk)
     
-    models.SubCategory.objects.filter( ~Q(pk__in=sub_category_pks)).delete()
+        category.subcategories.filter( ~Q(pk__in=sub_category_pks)).delete()
 
     return sub_categories
 
@@ -266,7 +279,7 @@ def getAppDetail(app_url_):
     app_url_en = HOME_URL + app_url_.url
     print "Parsing app detail : ", app_url_en
     #change app to iran lanuage so to get information in iran lanuage
-    params = {'l' : 'en'}
+    params = {'l' : 'fa'}
     app_url = ""
     url_parts = list(urlparse.urlparse(app_url_en))
     query = dict(urlparse.parse_qsl(url_parts[4]))
@@ -344,7 +357,7 @@ def getAppDetail(app_url_):
         found = False
         for app_screenshot in app.screenshots.all():
             if screenshoturl == app_screenshot.original_url:
-                found_screenshots.append( screenshoturl )
+                found_screenshots.add( screenshoturl )
                 break
         
     app.screenshots.filter(~Q( url__in=screenshots )).delete()
@@ -356,15 +369,13 @@ def getAppDetail(app_url_):
         screenshot_image_name = generateRandomName( new_screenshot,  'screenshot-')
         screenshot = models.Screenshot.objects.create(app=app, url=screenshot_image_name, original_url=new_screenshot)
         app.screenshots.add( screenshot  )
-
-        image_thread_pool.apply_async(convertWebp, args=(new_screenshot, screenshot_image_name, (500,400)))
-
+        convertWebp(new_screenshot, screenshot_image_name, (500,400))
 
 
     icon_image_name = generateRandomName(app_detail['icon'])
     app.icon = icon_image_name
     app.save()
-    image_thread_pool.apply_async(convertWebp, (app_detail['icon'], icon_image_name) )
+    convertWebp(app_detail['icon'], icon_image_name)
     
     return app
     
@@ -380,6 +391,8 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     app_categories = saveCategories(1)
     game_categories = saveCategories(2)
     categories = app_categories + game_categories
+    categories = models.Category.objects.all()
+
     if subcategories:
         #for each categories retrieve every sub categories 
         sub_categories = addSubCategories(categories)
@@ -387,8 +400,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
         sub_categories = models.SubCategory.objects.all()
     
     #sub_categories = models.SubCategory.objects.all()
-    #sub_categories = models.SubCategory.objects.all()
-
+    
     #get apps in sub category 
     app_urls = set()
 
@@ -404,15 +416,13 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     print "HOME STUFF"
     
     
-        
     if appUrls:
         print "APP URLS"
         app_urls = getAppURLS(sub_categories)
-
     else:
         app_urls =  models.AppUrl.objects.all()
 
-    #app_urls =  models.AppUrl.objects.all()
+    app_urls =  models.AppUrl.objects.all()
 
     #app_urls =  models.AppUrl.objects.all()
     #retrieve app detail 
@@ -422,9 +432,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
             thread_pool.apply_async(getAppDetail, (app_url,))
             counter+=1
     
-    image_thread_pool.close() # After all threads started we close the pool
-    image_thread_pool.join() # And wait until all threads are done
-
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done
 

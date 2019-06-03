@@ -160,14 +160,14 @@ class HomeSubCatApps(generics.ListAPIView):
 
 class HomeSubCollApps(generics.ListAPIView):
     queryset = models.HomeSubCollection.objects.all()
-    serializer_class = serializers.HomeAppSerializer
+    serializer_class = serializers.AppSerializer
     pagination_class = LimitOffsetPagination
     
     def list(self, request,subCollectionID ):
         queryset = self.get_queryset()
         subcollection= get_object_or_404(models.HomeSubCollection, pk=subCollectionID)
         apps = subcollection.apps.all()
-        serializer = serializers.HomeAppSerializer(apps, many=True)
+        serializer = serializers.AppSerializer(apps, many=True)
         return Response(serializer.data)
 
 
