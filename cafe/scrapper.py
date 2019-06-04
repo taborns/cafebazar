@@ -239,7 +239,7 @@ def getAppURLS(sub_categories):
 
         #to get full app list change language to english 
         sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
-        params = {'l' : 'en'}
+        params = {'l' : 'fa'}
         url_parts = list(urlparse.urlparse(sub_category_url))
         query = dict(urlparse.parse_qsl(url_parts[4]))
         query.update(params)
@@ -434,7 +434,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done
-
 
 
 
