@@ -108,12 +108,11 @@ def homeCatSave(home_sub_categories):
             homeSubCatObject.apps.add(homeApp)
             
     for home_sub_category in home_sub_categories:
-        try:
-            homeSubCatObject = models.HomeSubCat.objects.filter(name = home_sub_category.get('name'))
-            homeSubCatObject.update(**home_sub_category)
-            homeSubCatObject = homeSubCatObject.first()
-        except Exception as e:
-            print "#### **** CAT SAVE ERR", e
+        
+        homeSubCatObject = models.HomeSubCat.objects.filter(name = home_sub_category.get('name'))
+        homeSubCatObject.update(**home_sub_category)
+        homeSubCatObject = homeSubCatObject.first()
+        if not homeSubCatObject:
             homeSubCatObject = models.HomeSubCat.objects.create(**home_sub_category)
         
         cat_pks.append(homeSubCatObject.pk)
@@ -145,11 +144,9 @@ def homeCollSave(home_collections):
     for home_collection_name in home_collections:
         home_subcollections = home_collections[home_collection_name]
 
-        try:
-            home_collection_object = models.HomeCollection.objects.filter(name = home_collection_name).first()
-
-        except Exception as e:
-            print "#### ****  HOME COLLECTION ERR", e
+        home_collection_object = models.HomeCollection.objects.filter(name = home_collection_name).first()
+        if not home_collection_object:
+            print "#### ****  HOME COLLECTION ERR"
             home_collection_object = models.HomeCollection.objects.create(name=home_collection_name)
         
         home_collection_pks.append( home_collection_object.pk )
@@ -158,12 +155,11 @@ def homeCollSave(home_collections):
         for home_subcollection in home_subcollections:
             home_subcollection['collection'] = home_collection_object
 
-            try:
-                homeSubCollectionObject =home_collection_object.subcollections.filter(name=home_subcollection.get('name'))
-                homeSubCollectionObject.update( **home_subcollection)
-                homeSubCollectionObject = homeSubCollectionObject.first()
-            except Exception as e:
-                print "#### ****  HOME SUB COLLECTION ERR", e
+            homeSubCollectionObject =home_collection_object.subcollections.filter(name=home_subcollection.get('name'))
+            homeSubCollectionObject.update( **home_subcollection)
+            homeSubCollectionObject = homeSubCollectionObject.first()
+            if not homeSubCollectionObject:
+                print "#### ****  HOME SUB COLLECTION ERR"
 
                 homeSubCollectionObject = models.HomeSubCollection.objects.create(**home_subcollection)
             homeSubCollectionObject.apps.clear()
@@ -287,6 +283,17 @@ def getAppDetail(app_url_):
     url_parts[4] = urlencode(query)
     app_url= urlparse.urlunparse(url_parts)
     counter+=1
+
+    package_name = app_url.split("/")[-2]
+    
+    #check if app already saved. Pass if it is saved
+    try:
+        app = models.App.objects.get(package_name=package_name)
+        print "APP ALREADY SAVED"
+        return
+    except:
+        pass
+
     html = requests.get(app_url)
     soup = BeautifulSoup(html.text, 'lxml')
     html_en = requests.get(app_url_en)
@@ -385,13 +392,14 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     html = requests.get(categories_url)
 
     soup = BeautifulSoup(html.text, 'lxml')
-
-    #get list of app categories 
-    home_category = {'id' : HOME_CAT_ID, 'text' : 'home', 'url' : '/' }
-    app_categories = saveCategories(1)
-    game_categories = saveCategories(2)
-    categories = app_categories + game_categories
-    categories = models.Category.objects.all()
+    if appcategories:
+        #get list of app categories 
+        home_category = {'id' : HOME_CAT_ID, 'text' : 'home', 'url' : '/' }
+        app_categories = saveCategories(1)
+        game_categories = saveCategories(2)
+        categories = app_categories + game_categories
+    else:
+        categories = models.Category.objects.all()
 
     if subcategories:
         #for each categories retrieve every sub categories 
@@ -422,7 +430,6 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     else:
         app_urls =  models.AppUrl.objects.all()
 
-    app_urls =  models.AppUrl.objects.all()
 
     #app_urls =  models.AppUrl.objects.all()
     #retrieve app detail 
