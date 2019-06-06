@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^scrap/appurl/$', cafe_views.scrapAppsView),
     url(r'^scrap/appdetail/$', cafe_views.scrapAppDetailView),
     url(r'^scrap/subcat/$', cafe_views.scrapSubCatView),
+    url(r'^scrap/screenshot/$', cafe_views.screenshotView),
 
     url('^apps/$', cafe_views.ListApps.as_view()),
     url('^categories/$', cafe_views.ListCategories.as_view()),

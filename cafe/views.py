@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render, get_object_or_404
-from cafe.scrapper import scrap
+from cafe.scrapper import scrap, getScreenShot
 from cafe.ranks import rankScrap, saveCats, saveAppFilters
 from django.http import HttpResponse
 from rest_framework import mixins, generics

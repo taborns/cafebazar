@@ -12,7 +12,7 @@ from multiprocessing.pool import ThreadPool
 HOME_CAT_ID = 0
 HOME_URL =  "https://cafebazaar.ir"
 
-thread_count = 20
+thread_count = 4
 thread_pool = ThreadPool(processes=thread_count) 
  
 

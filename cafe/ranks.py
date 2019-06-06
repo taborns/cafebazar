@@ -95,7 +95,7 @@ def theScrapper( main_cat, app_filter):
 def rankScrap():
         app_filters = models.RankFilter.objects.all()
         main_cats = models.RankCat.objects.all()
-        thread_count = 10 
+        thread_count = 3 
         thread_pool = ThreadPool(processes=thread_count) 
         known_threads = {}
 
