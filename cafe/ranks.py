@@ -12,7 +12,10 @@ headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleW
 
 def saveCats():
     for main_cat_key in main_cats:
-        models.RankCat.objects.create(catcode= main_cat_key, name=main_cat_key.replace('_', ' ').title())
+        try:
+                models.RankCat.objects.get(catcode= main_cat_key, name=main_cat_key.replace('_', ' ').title())
+        except:
+                models.RankCat.objects.create(catcode= main_cat_key, name=main_cat_key.replace('_', ' ').title())
 
 #get all filters for each main categories
 def saveAppFilters():
@@ -28,7 +31,10 @@ def saveAppFilters():
         filtercode = filter_url.split('/')[-2]
 
         filter_data = {'name' : select_item.get_text().strip() , 'filtercode' : filtercode}
-        models.RankFilter.objects.create(**filter_data)
+        try:
+                models.RankFilter.objects.get(**filter_data)
+        except:
+                models.RankFilter.objects.create(**filter_data)
     
 
 
@@ -64,9 +70,10 @@ def saveApp(filterData, catData):
                 if rankApp:
                         app['icon'] = rankApp.icon
                 else:
-                        print "No app found", app['rankfilter'].pk, app['rankcat'].pk, app['packagename']
-                        app['icon'] =  convertWebp(rankRow.select('td.ranking-icon-cell img')[0].get('data-src'))
-                
+                        print "No app found", app['rankfilter'].name, app['rankcat'].name, app['packagename']
+                        app['icon'] = generateRandomName( rankRow.select('td.ranking-icon-cell img')[0].get('data-src') )
+                        convertWebp( rankRow.select('td.ranking-icon-cell img')[0].get('data-src'), app['icon'] )
+
                 rankApp = models.RankApp(**app)
                 all_apps.append(rankApp)
 
@@ -77,7 +84,9 @@ def saveApp(filterData, catData):
 # Define a function for the thread
 def theScrapper( main_cat, app_filter):
         all_apps = saveApp(app_filter, main_cat)
+        print "ALL APPS ARE SAVED"
         app_filter.apps.filter(rankcat=main_cat).delete()
+        print "ALL APPS GOES HERE"
         for app in all_apps:
                 app.save()
         print "DONE", app_filter.pk, main_cat.pk, app_filter.apps.filter(rankcat=main_cat).count();
@@ -92,6 +101,7 @@ def rankScrap():
 
         for main_cat in main_cats:
                 for app_filter in app_filters:
+                        #theScrapper(main_cat,app_filter)
                         thread_pool.apply_async(theScrapper, args=(main_cat,app_filter))
 
         thread_pool.close() # After all threads started we close the pool

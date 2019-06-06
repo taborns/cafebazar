@@ -55,7 +55,6 @@ def saveCategories(category_type=1):
 
         category_names.append( app_name )
     
-    print category_names
     #remove categories not in the list 
     models.Category.objects.filter( ~Q( name__in=category_names ), category_type=category_type).delete()
 
@@ -103,7 +102,7 @@ def homeCatSave(home_sub_categories):
     cat_pks = []
     def getAppDetailCat(homeSubCatAppUrlObj, homeSubCatObject):
         homeApp = getAppDetail(homeSubCatAppUrlObj)
-        print "I am here ", homeSubCatObject.name, homeSubCatObject.pk, homeApp.package_name
+        print "Home category App ", homeSubCatObject.name, homeSubCatObject.pk, homeApp.package_name
         if homeApp:
             homeSubCatObject.apps.add(homeApp)
             
@@ -190,7 +189,7 @@ def addSubCategories(categories):
     sub_category_selector = ".msht-row-head .msht-row-title"
 
     for index, category in enumerate(categories):
-        print category.name
+        print "sub category add", category.name
         full_url =  HOME_URL + category.url
         html = requests.get(full_url)
         
@@ -208,10 +207,12 @@ def addSubCategories(categories):
         subCatNames = []
         for label, url in sub_categories_label:
             subCatNames.append( label )
-            try:
-                subcat = category.subcategories.filter(name=label)[0]
-                subcat.update(url=url)
-            except Exception as e:
+
+            subcat = category.subcategories.filter(name=label)
+            subcat.update(url=url)
+            subcat = subcat.first()
+
+            if not subcat:
                 print  category.pk, "CAT PK"
                 subcat = models.SubCategory(**{ 'name' : label, 'url' : url})
                 subcat.category = category
@@ -230,7 +231,7 @@ def getAppURLS(sub_categories):
     app_urls = set()
 
     for sub_category in sub_categories:
-        print sub_category.category.name, sub_category.name
+        print "APP URL", sub_category.category.name, sub_category.name
         current_page = 0
 
         #to get full app list change language to english 
@@ -290,7 +291,7 @@ def getAppDetail(app_url_):
     try:
         app = models.App.objects.get(package_name=package_name)
         print "APP ALREADY SAVED"
-        return
+        return app
     except:
         pass
 
@@ -301,6 +302,7 @@ def getAppDetail(app_url_):
 
     icon_sel = ".app-img"
     title_sel = ".app-name h1"
+
     dev_sel = ".dev a"
     price_sel = ".price a"
     screen_shots = ".screenshot-holder .screenshot-wrp a"
@@ -376,8 +378,6 @@ def getAppDetail(app_url_):
         screenshot_image_name = generateRandomName( new_screenshot,  'screenshot-')
         screenshot = models.Screenshot.objects.create(app=app, url=screenshot_image_name, original_url=new_screenshot)
         app.screenshots.add( screenshot  )
-        convertWebp(new_screenshot, screenshot_image_name, (500,400))
-
 
     icon_image_name = generateRandomName(app_detail['icon'])
     app.icon = icon_image_name
@@ -385,8 +385,17 @@ def getAppDetail(app_url_):
     convertWebp(app_detail['icon'], icon_image_name)
     
     return app
+
+def getScreenShot():
+    screenshots = models.Screenshot.objects.all()  
+    for screenshot in screenshots:
+        thread_pool.apply_async(convertWebp, (screenshot.original_url, screenshot.url, (500,400)) )
     
+    thread_pool.close() # After all threads started we close the pool
+    thread_pool.join() # And wait until all threads are done
+
 def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):
+
     PAGE_INC = 24
     categories_url = "https://cafebazaar.ir/cat/?partial=true"
     html = requests.get(categories_url)

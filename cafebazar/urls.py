@@ -45,8 +45,7 @@ urlpatterns = [
     url('^home/category/(?P<categoryID>\d+)/$', cafe_views.HomeSubCatApps.as_view()),
 
     url('^rank/scrap/$', cafe_views.rankScrapView),
-    url('^rank/savecat/$', cafe_views.saveCatView),
-    url('^rank/savefilter/$', cafe_views.saveAppFilterView),
+    url('^rank/savecatfilter/$', cafe_views.saveCatView),
 
     url('^rank/categories/$', cafe_views.RankCatView.as_view()),
     url('^rank/filters/$', cafe_views.RankFilterView.as_view()),
@@ -55,4 +54,5 @@ urlpatterns = [
     url('^myapps/((?P<appType>(recom|ad))/)?$', cafe_views.RecommendedAppsView.as_view()),
     
 ] + static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns  = urlpatterns + static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

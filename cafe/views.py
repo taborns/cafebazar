@@ -16,6 +16,10 @@ def scrapView(request, appcategories=True, gamecategories=True, subcategories=Tr
     appDetails = scrap(appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True)
     return HttpResponse(appDetails)
 
+def screenshotView(request):
+    getScreenShot()
+    return HttpResponse('Done saving screenshot')
+    
 def scrapAppsView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False ):
     appDetails = scrap(appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False)
     return HttpResponse(appDetails)
@@ -30,11 +34,8 @@ def scrapSubCatView(request, appcategories=False, gamecategories=False, subcateg
 
 def saveCatView(request):
     saveCats()
-    return HttpResponse('Done saving categories')
-
-def saveAppFilterView(request):
     saveAppFilters()
-    return HttpResponse('Done saving filters')
+    return HttpResponse('Done saving categories')
 
 def rankScrapView(request):
     rankScrap()
