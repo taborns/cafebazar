@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render, get_object_or_404
-from cafe.scrapper import scrap, getScreenShot
+from cafe.scrapper import scrap, getScreenShot, getIcon
 from cafe.ranks import rankScrap, saveCats, saveAppFilters
 from django.http import HttpResponse
 from rest_framework import mixins, generics
@@ -19,7 +19,13 @@ def scrapView(request, appcategories=True, gamecategories=True, subcategories=Tr
 def screenshotView(request):
     getScreenShot()
     return HttpResponse('Done saving screenshot')
-    
+
+def iconView(request):
+    getIcon()
+    return HttpResponse('Done saving Icons')
+
+
+
 def scrapAppsView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False ):
     appDetails = scrap(appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False)
     return HttpResponse(appDetails)
