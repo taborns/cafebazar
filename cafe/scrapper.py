@@ -387,9 +387,18 @@ def getAppDetail(app_url_):
     return app
 
 def getScreenShot():
-    screenshots = models.Screenshot.objects.all()  
-    for screenshot in screenshots:
-        thread_pool.apply_async(convertWebp, (screenshot.original_url, screenshot.url, (500,400)) )
+    apps = models.App.objects.all()  
+    for app in apps:
+        screenshots = app.screenshots.all()
+        for screenshot in screenshots:
+            from django.conf import settings
+            import os 
+            IMAGE_PATH = settings.MEDIA_ROOT
+            
+            if not os.path.isfile(IMAGE_PATH + '/' + screenshot.url):
+                print "Image path found"
+                thread_pool.apply_async(convertWebp, (screenshot.original_url, screenshot.url, (500,400)) )
+                #convertWebp(screenshot.original_url, screenshot.url, (500,400))
     
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done

@@ -25,11 +25,14 @@ def generateRandomName(url, prefix='icon-'):
     return image_name
 
 def doWebpConversion(url, image_name, size):
-    
-    image = Image.open(requests.get(url, stream=True).raw)
+    print url, image_name
+    try:
+        image = Image.open(requests.get(url, stream=True).raw)
+    except:
+        return
     image.thumbnail(size, Image.ANTIALIAS)
     image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
-
+    print image_name, url, "SCRENESHOT SAVED" 
     return image_name
 
 def buildUrl(url, current_page=0, lan='en'):
