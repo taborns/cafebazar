@@ -396,14 +396,19 @@ def getIcon():
         IMAGE_PATH = settings.MEDIA_ROOT
             
         if not os.path.isfile(IMAGE_PATH + '/' + app.icon):
-            print "Image not saved locally. Looking for online", counter
+            print "Image not saved locally. Looking for online", counter, app.url
             html = requests.get(app.url)
             soup = BeautifulSoup(html.text, 'lxml')
             icon_sel =  ".app-img"
-            icon_original_url = "https:" + soup.select(icon_sel)[0].get('src')
+            try:
+                icon_original_url = "https:" + soup.select(icon_sel)[0].get('src')
+            except:
+                print app.url, "Getting icon"
+                continue
             thread_pool.apply_async(convertWebp, (icon_original_url, app.icon, (500,400)) )
             counter+=1
-    
+        else:
+            print "Image found", app.url
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done
 
