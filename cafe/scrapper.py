@@ -229,11 +229,11 @@ def addSubCategories(categories):
 def getAppURLS(sub_categories):
     app_url_urls = []
     app_urls = set()
-
+    counter = 0
     for sub_category in sub_categories:
-        print "APP URL", sub_category.category.name, sub_category.name
+        print "APP URL",counter, sub_category.category.name, sub_category.name
         current_page = 0
-
+        counter +=1 
         #to get full app list change language to english 
         sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
         params = {'l' : 'fa'}
@@ -291,11 +291,14 @@ def getAppDetail(app_url_):
     try:
         app = models.App.objects.get(package_name=package_name)
         if app_url_.subcategory != 0:
-            app.sub_category = models.SubCategory.objects.get(pk=app_url.subcategory)
+            app.sub_category = models.SubCategory.objects.get(pk=app_url_.subcategory)
+            app.save()
+            print "FOUND"
         return app
-    except:
-        pass
-
+    except Exception as e:
+        pass#print "Error", e
+    print '----'
+    return 
     html = requests.get(app_url)
     soup = BeautifulSoup(html.text, 'lxml')
     html_en = requests.get(app_url_en)
@@ -332,7 +335,7 @@ def getAppDetail(app_url_):
         app_detail['cateogry'] = app_category
         
         if app_url_.subcategory != 0:
-            app_detail['sub_category'] = models.SubCategory.objects.get(pk=app_url.subcategory)
+            app_detail['sub_category'] = models.SubCategory.objects.get(pk=app_url_.subcategory)
         else:
             app_detail['sub_category'] = app_category.subcategories.first()
 
@@ -341,6 +344,7 @@ def getAppDetail(app_url_):
         app_detail['url'] = app_url
         app_detail['package_name'] = app_url.split("/")[-2]
     except Exception as e:
+        print "Major error", e
         return
     try:
         app_detail['description'] = (soup.select(description_sel)[0].get_text()).encode('utf-8').strip()
@@ -364,6 +368,7 @@ def getAppDetail(app_url_):
         app = models.App.objects.get(package_name=app_url.split("/")[-2])
         app.update(**app_detail)
     except:
+        print "new app found"
         app = models.App(**app_detail)
         app.save()
     
@@ -388,8 +393,9 @@ def getAppDetail(app_url_):
     icon_image_name = generateRandomName(app_detail['icon'])
     app.icon = icon_image_name
     app.save()
-    convertWebp(app_detail['icon'], icon_image_name)
-    
+    #convertWebp(app_detail['icon'], icon_image_name)
+    print "DOne here"
+    print "--------------"
     return app
 
 def getIcon():

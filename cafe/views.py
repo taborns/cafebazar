@@ -24,7 +24,9 @@ def iconView(request):
     getIcon()
     return HttpResponse('Done saving Icons')
 
-
+def scrapHomeView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=False, homeStuff=True, appDetail=False ):
+    appDetails = scrap(appcategories=False, gamecategories=False, subcategories=False, appUrls=False, homeStuff=True, appDetail=False)
+    return HttpResponse(appDetails)
 
 def scrapAppsView(request, appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False ):
     appDetails = scrap(appcategories=False, gamecategories=False, subcategories=False, appUrls=True, homeStuff=False, appDetail=False)
