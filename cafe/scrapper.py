@@ -290,7 +290,8 @@ def getAppDetail(app_url_):
     #check if app already saved. Pass if it is saved
     try:
         app = models.App.objects.get(package_name=package_name)
-        print "APP ALREADY SAVED"
+        if app_url_.subcategory != 0:
+            app.sub_category = models.SubCategory.objects.get(pk=app_url.subcategory)
         return app
     except:
         pass
@@ -329,7 +330,12 @@ def getAppDetail(app_url_):
         app_category_name = (soup.select(app_attributes)[categoryID].get_text()).encode('utf-8').strip()
         app_category = models.Category.objects.get(name=app_category_name)
         app_detail['cateogry'] = app_category
-        app_detail['sub_category'] = app_category.subcategories.first()
+        
+        if app_url_.subcategory != 0:
+            app_detail['sub_category'] = models.SubCategory.objects.get(pk=app_url.subcategory)
+        else:
+            app_detail['sub_category'] = app_category.subcategories.first()
+
         app_detail['rating_total'] = soup_en.select(rating_total)[0].get_text().encode('utf-8').strip()
         app_detail['rating_total_count'] = soup_en.select(rating_total_count)[0].get_text().encode('utf-8').strip()
         app_detail['url'] = app_url
@@ -424,6 +430,7 @@ def getScreenShot():
     
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done
+
 
 def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):
 
