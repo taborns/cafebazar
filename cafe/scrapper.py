@@ -286,19 +286,13 @@ def getAppDetail(app_url_):
     counter+=1
 
     package_name = app_url.split("/")[-2]
-    
+    app = None
     #check if app already saved. Pass if it is saved
     try:
         app = models.App.objects.get(package_name=package_name)
-        if app_url_.subcategory != 0:
-            app.sub_category = models.SubCategory.objects.get(pk=app_url_.subcategory)
-            app.save()
-            print "FOUND"
-        return app
     except Exception as e:
-        pass#print "Error", e
-    print '----'
-    return 
+        pass
+         
     html = requests.get(app_url)
     soup = BeautifulSoup(html.text, 'lxml')
     html_en = requests.get(app_url_en)
@@ -336,6 +330,8 @@ def getAppDetail(app_url_):
         
         if app_url_.subcategory != 0:
             app_detail['sub_category'] = models.SubCategory.objects.get(pk=app_url_.subcategory)
+        elif app:
+            app_detail['sub_category'] = app.sub_category
         else:
             app_detail['sub_category'] = app_category.subcategories.first()
 
