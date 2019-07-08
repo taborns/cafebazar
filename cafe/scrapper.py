@@ -12,7 +12,7 @@ from multiprocessing.pool import ThreadPool
 HOME_CAT_ID = 0
 HOME_URL =  "https://cafebazaar.ir"
 
-thread_count = 4
+thread_count = 10
 thread_pool = ThreadPool(processes=thread_count) 
  
 
@@ -189,7 +189,7 @@ def addSubCategories(categories):
     sub_category_selector = ".msht-row-head .msht-row-title"
 
     for index, category in enumerate(categories):
-        print "sub category add", category.name
+        print "sub category add", category.name, category.pk
         full_url =  HOME_URL + category.url
         html = requests.get(full_url)
         
@@ -287,6 +287,7 @@ def getAppDetail(app_url_):
 
     package_name = app_url.split("/")[-2]
     app = None
+
     #check if app already saved. Pass if it is saved
     try:
         app = models.App.objects.get(package_name=package_name)
@@ -324,8 +325,8 @@ def getAppDetail(app_url_):
         app_detail['developer'] = developer
         app_detail['price'] =(soup.select(price_sel)[0].get_text()).encode('utf-8').strip()
         screenshots = {"https:" + screenshot.get('href') for screenshot in soup.select(screen_shots)}
-        app_category_name = (soup.select(app_attributes)[categoryID].get_text()).encode('utf-8').strip()
-        app_category = models.Category.objects.get(name=app_category_name)
+        app_category_url = soup.select('.col-sm-4 div a')[2].get('href')
+        app_category = models.Category.objects.get(url=app_category_url)
         app_detail['cateogry'] = app_category
         
         if app_url_.subcategory != 0:
@@ -340,7 +341,7 @@ def getAppDetail(app_url_):
         app_detail['url'] = app_url
         app_detail['package_name'] = app_url.split("/")[-2]
     except Exception as e:
-        print "Major error", e
+        print "Major error", e, app_category_url
         return
     try:
         app_detail['description'] = (soup.select(description_sel)[0].get_text()).encode('utf-8').strip()
@@ -446,6 +447,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     html = requests.get(categories_url)
 
     soup = BeautifulSoup(html.text, 'lxml')
+    
     if appcategories:
         #get list of app categories 
         home_category = {'id' : HOME_CAT_ID, 'text' : 'home', 'url' : '/' }
