@@ -226,52 +226,61 @@ def addSubCategories(categories):
 
     return sub_categories
 
-def getAppURLS(sub_categories):
+def getAppsInSub(sub_category):
     app_url_urls = []
     app_urls = set()
-    counter = 0
-    for sub_category in sub_categories:
-        print "APP URL",counter, sub_category.category.name, sub_category.name
-        current_page = 0
-        counter +=1 
-        #to get full app list change language to english 
-        sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
-        params = {'l' : 'fa'}
-        url_parts = list(urlparse.urlparse(sub_category_url))
-        query = dict(urlparse.parse_qsl(url_parts[4]))
-        query.update(params)
-        url_parts[4] = urlencode(query)
-        sub_category_url= urlparse.urlunparse(url_parts)
 
+    cateogry = sub_category.category
+    print "APP URL", sub_category.category.pk, sub_category.pk
+    current_page = 0
+
+    #to get full app list change language to english 
+    sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
+    params = {'l' : 'fa'}
+    url_parts = list(urlparse.urlparse(sub_category_url))
+    query = dict(urlparse.parse_qsl(url_parts[4]))
+    query.update(params)
+    url_parts[4] = urlencode(query)
+    sub_category_url= urlparse.urlunparse(url_parts)
+
+    html = requests.get(sub_category_url)
+    soup = BeautifulSoup(html.text, 'lxml')
+    apps = soup.select(".msht-app-list a")
+    while len(apps)>0:
+        current_page += PAGE_INC
+        html = requests.get(sub_category_url)
+        soup = BeautifulSoup(html.text, 'lxml')
+
+        for app in apps:
+            appURL =  (app.get('href')).encode('utf-8').strip()
+            try:
+                app_url = models.AppUrl.objects.get(url=appURL)
+                app_url.category = sub_category.category
+                app_url.subcategory = sub_category
+                app_url.save()
+            except:
+                app_url = models.AppUrl.objects.create(**{ 'category' : sub_category.category, 'url' : appURL, 'subcategory' : sub_category })
+            
+            app_url_urls.append(appURL)
+
+        app_urls.add( app_url )
+
+        sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
         html = requests.get(sub_category_url)
         soup = BeautifulSoup(html.text, 'lxml')
         apps = soup.select(".msht-app-list a")
-        while len(apps)>0:
-            current_page += PAGE_INC
-            html = requests.get(sub_category_url)
-            soup = BeautifulSoup(html.text, 'lxml')
+    
+    models.AppUrl.objects.filter(~Q(url__in=app_url_urls) & Q(subcategory=sub_category)).delete()
 
-            for app in apps:
-                appURL =  (app.get('href')).encode('utf-8').strip()
-                try:
-                    app_url = models.AppUrl.objects.get(url=appURL)
-                except:
-                    app_url = models.AppUrl.objects.create(**{ 'category' : sub_category.category.pk, 'url' : appURL, 'subcategory' : sub_category.pk })
-                
-                app_url_urls.append(appURL)
+    
+def getAppURLS(sub_categories):
+    for sub_category in sub_categories:
+        thread_pool.apply_async(getAppsInSub, (sub_category, ) )
 
-            app_urls.add( app_url )
+    thread_pool.close() # After all threads started we close the pool
+    thread_pool.join() # And wait until all threads are done
 
-            sub_category_url = "https://cafebazaar.ir/" + sub_category.url + "?&p=" + str(current_page) + "&partial=true"
-            html = requests.get(sub_category_url)
-            soup = BeautifulSoup(html.text, 'lxml')
-            apps = soup.select(".msht-app-list a")
-        
-    models.AppUrl.objects.filter(~Q(url__in=app_url_urls)).delete()
-
-    return app_urls
-
-def getAppDetail(app_url_):        
+def getAppDetail(app_url_, changeSubCat=False):        
     counter = 0
     app_url_en = HOME_URL + app_url_.url
     print "Parsing app detail : ", app_url_en
@@ -291,7 +300,15 @@ def getAppDetail(app_url_):
     #check if app already saved. Pass if it is saved
     try:
         app = models.App.objects.get(package_name=package_name)
+        if app_url_.subcategory:
+            app.sub_category = app_url_.subcategory
+        
+        if changeSubCat:
+            return
+
     except Exception as e:
+        if changeSubCat:
+            return
         pass
          
     html = requests.get(app_url)
@@ -329,8 +346,8 @@ def getAppDetail(app_url_):
         app_category = models.Category.objects.get(url=app_category_url)
         app_detail['cateogry'] = app_category
         
-        if app_url_.subcategory != 0:
-            app_detail['sub_category'] = models.SubCategory.objects.get(pk=app_url_.subcategory)
+        if app_url_.subcategory:
+            app_detail['sub_category'] = app_url_.subcategory
         elif app:
             app_detail['sub_category'] = app.sub_category
         else:
@@ -440,7 +457,7 @@ def getScreenShot():
     thread_pool.join() # And wait until all threads are done
 
 
-def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True):
+def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategories=True, appUrls=True, homeStuff=True, appDetail=True, changeSubCat=False):
 
     PAGE_INC = 24
     categories_url = "https://cafebazaar.ir/cat/?partial=true"
@@ -492,7 +509,7 @@ def scrap(skipFirst=False, appcategories=True, gamecategories=True, subcategorie
     if appDetail:
         counter = 0
         for app_url in app_urls:
-            thread_pool.apply_async(getAppDetail, (app_url,))
+            thread_pool.apply_async(getAppDetail, (app_url, changeSubCat))
             counter+=1
     
     thread_pool.close() # After all threads started we close the pool

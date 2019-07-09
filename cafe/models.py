@@ -85,8 +85,8 @@ class Developer(models.Model):
 
 class AppUrl(models.Model):
     url = models.URLField()
-    category = models.IntegerField()
-    subcategory = models.IntegerField()
+    category = models.ForeignKey('Category', null=True, blank=True, related_name='urls')
+    subcategory = models.ForeignKey('SubCategory', null=True, blank=True, related_name='urls')
 
 class HomeSubCat(models.Model):
     name = models.CharField(max_length=200)

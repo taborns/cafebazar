@@ -40,6 +40,10 @@ def scrapSubCatView(request, appcategories=False, gamecategories=False, subcateg
     appDetails = scrap( appcategories=False, gamecategories=False, subcategories=True, appUrls=False, homeStuff=False, appDetail=False )
     return HttpResponse(appDetails)
 
+def changeSubcatOnlyView(request):
+    appDetails = scrap( appcategories=False, gamecategories=False, subcategories=False, changeSubCat=True, appUrls=False, homeStuff=False, appDetail=True  )
+    return HttpResponse("DONE BOI")
+
 def saveCatView(request):
     saveCats()
     saveAppFilters()
