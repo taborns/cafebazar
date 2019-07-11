@@ -34,11 +34,9 @@ def doWebpConversion(url, image_name, size):
     except:
         return
     
-    print image_name, "DONE DOWNLOAD", url, time() - start_time,
     start_time = time()
     image.thumbnail(size, Image.ANTIALIAS)
     image.save(IMAGE_PATH + '/' + image_name, 'webp', optimize=True)
-    print "END Download", time() - start_time
     #print image_name, url, "SCRENESHOT SAVED" 
     return image_name
 

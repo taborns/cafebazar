@@ -412,29 +412,34 @@ def getAppDetail(app_url_, changeSubCat=False):
     print "--------------"
     return app
 
+def retrieveIcon(app, counter, total_counter):
+    print "Image not saved locally. Looking for online nonfound/found", counter, total_counter, app.url
+    html = requests.get(app.url)
+    soup = BeautifulSoup(html.text, 'lxml')
+    icon_sel =  ".app-img"
+    try:
+        icon_original_url = "https:" + soup.select(icon_sel)[0].get('src')
+        convertWebp(icon_original_url, app.icon, (500,400))
+
+    except:
+        print app.url, "Getting icon"
+        return
+    
 def getIcon():
     apps = models.App.objects.all()  
     counter = 1
+    total_counter = 0
     for app in apps:
+        total_counter+=1
         screenshots = app.screenshots.all()
         from django.conf import settings
         import os 
         IMAGE_PATH = settings.MEDIA_ROOT
             
         if not os.path.isfile(IMAGE_PATH + '/' + app.icon):
-            print "Image not saved locally. Looking for online", counter, app.url
-            html = requests.get(app.url)
-            soup = BeautifulSoup(html.text, 'lxml')
-            icon_sel =  ".app-img"
-            try:
-                icon_original_url = "https:" + soup.select(icon_sel)[0].get('src')
-            except:
-                print app.url, "Getting icon"
-                continue
-            thread_pool.apply_async(convertWebp, (icon_original_url, app.icon, (500,400)) )
-            counter+=1
-        else:
-            print "Image found", app.url
+           thread_pool.apply_async( retrieveIcon, (app, counter, total_counter))
+           counter +=1
+        
     thread_pool.close() # After all threads started we close the pool
     thread_pool.join() # And wait until all threads are done
 
