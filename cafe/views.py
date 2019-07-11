@@ -80,7 +80,7 @@ class SearchView(generics.ListAPIView):
 
     def list(self, request, name):
         queryset = self.get_queryset()
-        apps = queryset.filter(name__startswith = name)
+        apps = queryset.filter(name__icontains = name)
         serializer = serializers.AppSerializer(apps, many=True)
         return Response(serializer.data)
 
